@@ -353,6 +353,14 @@ var l20n=_RL20n_.l20n,
 	  }
 	});
 
+	var CategoryRow = React.createClass({displayName: 'CategoryRow',
+	  render: function() {
+	    return (
+	        React.DOM.option({value: this.props.id}, this.props.name)
+	    );
+	  }
+	});
+
 	var Body = React.createClass({displayName: 'Body',
 	  mixins: [RoutingContextMixin],
 	  statics: {
@@ -404,14 +412,36 @@ var l20n=_RL20n_.l20n,
 	      console.log(salary);
 	    }    
 	  },
-	  prompt: function() {
+	  addCategory: function() {
 	    vex.dialog.prompt({
-	      message: 'Nhóm hàng',
-	      placeholder: 'Planet name',
+	      message: 'Loại sản phẩm',
+	      placeholder: 'Tên loại',
 	      callback: function(value) {
 	        vex.dialog.alert('Callback value: <b>'+value+'</b>');
 
 	        //TODO: gọi API tạo category
+	      }
+	    });
+	  },
+	  addProduct: function() {
+	    vex.dialog.open({
+	      message: 'Nhập thông tin sản phẩm:',
+	      input: '' +
+	          '<input name="name" type="text" placeholder="Tên" required />' +
+	          '<input name="pos" type="text" placeholder="Vị trí" required />' +
+	          '<input name="office" type="text" placeholder="Văn phòng" required />' +
+	          '<input name="age" type="text" placeholder="Tuổi" required />' +
+	          '<input name="start" type="date" placeholder="Ngày bắt đầu" required />' +
+	          '<input name="salary" type="text" placeholder="Lương" required />' +
+	      '',
+	      buttons: [
+	          $.extend({}, vex.dialog.buttons.YES, { text: 'Đồng ý' }),
+	          $.extend({}, vex.dialog.buttons.NO, { text: 'Hủy bỏ' })
+	      ],
+	      callback: function (data) {
+	        vex.dialog.alert('Tên: ' + data.name + ' Ngày: ' + data.start);
+
+	        //TODO: Gọi API tạo sản phẩm
 	      }
 	    });
 	  },
@@ -450,11 +480,16 @@ var l20n=_RL20n_.l20n,
 	    this.props.employees.forEach(function(item) { 
 	      rows.push(EmployeeRow({toggle: toggle, refresh: refresh, id: item.id, name: item.name, pos: item.pos, office: item.office, age: item.age, start: item.start, salary: item.salary, key: item.id}));
 	    });
+
+	    var categories = [];
+	    this.props.categories.forEach(function(item) {
+	      categories.push(CategoryRow({id: item.id, name: item.name}));
+	    });
 	    return (
 	      Container({id: "body"}, 
 	        Grid(null, 
 	          Row(null, 
-	            Col({sm: 3}, 
+	            Col({sm: 6}, 
 	              PanelContainer({noOverflow: true, controlStyles: "bg-green fg-white"}, 
 	                Panel(null, 
 	                  PanelHeader({className: "bg-green fg-white"}, 
@@ -462,7 +497,7 @@ var l20n=_RL20n_.l20n,
 	                      Row(null, 
 	                        Col({xs: 12}, 
 	                          React.DOM.h3(null, 
-	                            "Nhóm hàng"                             
+	                            "Sản phẩm"
 	                          )
 	                        )
 	                      )
@@ -471,18 +506,26 @@ var l20n=_RL20n_.l20n,
 	                  PanelBody(null, 
 	                    Grid(null, 
 	                      Row(null, 
-	                        Col({xs: 12}, 
+	                        Col({xs: 6}, 
 	                          Form(null, 
 	                            FormGroup(null, 
-	                              Button({outlined: true, onClick: this.prompt}, 
+	                              React.DOM.h4(null, "Loại sản phẩm"), 
+	                              Button({bsStyle: "green", outlined: true, onClick: this.addCategory}, 
 	                                "Thêm"
 	                              ), 
 	                              Select({id: "dropdownselect", defaultValue: "1"}, 
-	                                React.DOM.option({value: "1"}, "Option 1"), 
-	                                React.DOM.option({value: "2"}, "Option 2"), 
-	                                React.DOM.option({value: "3"}, "Option 3"), 
-	                                React.DOM.option({value: "4"}, "Option 4"), 
-	                                React.DOM.option({value: "5"}, "Option 5")
+	                                categories
+	                              )
+	                            )
+	                          )
+	                        ), 
+
+	                        Col({xs: 6}, 
+	                          Form(null, 
+	                            FormGroup(null, 
+	                              React.DOM.h4(null, "Thêm mới"), 
+	                              Button({bsStyle: "green", outlined: true, onClick: this.addProduct}, 
+	                                "Thêm"
 	                              )
 	                            )
 	                          )
@@ -494,14 +537,14 @@ var l20n=_RL20n_.l20n,
 	              )
 	            ), 
 
-	            Col({sm: 3}, 
+	            Col({sm: 6}, 
 	              PanelContainer({noOverflow: true, controlStyles: "bg-green fg-white"}, 
 	                Panel(null, 
 	                  PanelHeader({className: "bg-green fg-white"}, 
 	                    Grid(null, 
 	                      Row(null, 
 	                        Col({xs: 12}, 
-	                          React.DOM.h3(null, "Loại hàng hóa")
+	                          React.DOM.h3(null, "Bộ lọc")
 	                        )
 	                      )
 	                    )
@@ -509,43 +552,10 @@ var l20n=_RL20n_.l20n,
 	                  PanelBody(null, 
 	                    Grid(null, 
 	                      Row(null, 
-	                        Col({xs: 12}, 
+	                        Col({xs: 6}, 
 	                          Form(null, 
 	                            FormGroup(null, 
-	                              Checkbox({value: "option1", name: "checkbox-options"}, 
-	                                "Hàng nhập về"
-	                              ), 
-	                              Checkbox({value: "option2", defaultChecked: true, name: "checkbox-options"}, 
-	                                "Hàng dịch vụ"
-	                              )
-	                            )
-	                          )
-	                        )
-	                      )
-	                    )
-	                  )
-	                )
-	              )
-	            ), 
-
-	            Col({sm: 3}, 
-	              PanelContainer({noOverflow: true, controlStyles: "bg-green fg-white"}, 
-	                Panel(null, 
-	                  PanelHeader({className: "bg-green fg-white"}, 
-	                    Grid(null, 
-	                      Row(null, 
-	                        Col({xs: 12}, 
-	                          React.DOM.h3(null, "Lọc tồn kho")
-	                        )
-	                      )
-	                    )
-	                  ), 
-	                  PanelBody(null, 
-	                    Grid(null, 
-	                      Row(null, 
-	                        Col({xs: 12}, 
-	                          Form(null, 
-	                            FormGroup(null, 
+	                              React.DOM.h4(null, "Bộ lọc 1"), 
 	                              Radio({value: "option1", defaultChecked: true, name: "radio-options"}, 
 	                                "Option 1"
 	                              ), 
@@ -557,32 +567,12 @@ var l20n=_RL20n_.l20n,
 	                              )
 	                            )
 	                          )
-	                        )
-	                      )
-	                    )
-	                  )
-	                )
-	              )
-	            ), 
+	                        ), 
 
-	            Col({sm: 3}, 
-	              PanelContainer({noOverflow: true, controlStyles: "bg-green fg-white"}, 
-	                Panel(null, 
-	                  PanelHeader({className: "bg-green fg-white"}, 
-	                    Grid(null, 
-	                      Row(null, 
-	                        Col({xs: 12}, 
-	                          React.DOM.h3(null, "Lựa chọn hiển thị")
-	                        )
-	                      )
-	                    )
-	                  ), 
-	                  PanelBody(null, 
-	                    Grid(null, 
-	                      Row(null, 
-	                        Col({xs: 12}, 
+	                        Col({xs: 6}, 
 	                          Form(null, 
 	                            FormGroup(null, 
+	                              React.DOM.h4(null, "Bộ lọc 2"), 
 	                              Radio({value: "option1", defaultChecked: true, name: "radio-options"}, 
 	                                "Option 1"
 	                              ), 
@@ -663,13 +653,20 @@ var l20n=_RL20n_.l20n,
 	      Container({id: "container", className: classes}, 
 	        Sidebar(null), 
 	        Header(null), 
-	        Body({employees: EMPLOYEES}, 
+	        Body({categories: CATEGORIES, employees: EMPLOYEES}, 
 	          Footer(null)
 	        )
 	      )
 	    );
 	  }
 	});
+
+	var CATEGORIES = [
+	  {id: '1', name: 'Cafe'},
+	  {id: '2', name: 'Sinh tố'},
+	  {id: '3', name: 'Nước giải khát'},
+	  {id: '4', name: 'Thuốc độc'}
+	];
 
 	var EMPLOYEES = [
 	  {id: '1', name: 'Airi Satou', pos: 'Accountant', office: 'Tokyo', age: '33', start: '2008/11/28', salary: '$162,700'},

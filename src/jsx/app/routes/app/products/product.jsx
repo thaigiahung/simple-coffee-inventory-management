@@ -56,6 +56,14 @@ var EmployeeRow = React.createClass({
   }
 });
 
+var CategoryRow = React.createClass({
+  render: function() {
+    return (
+        <option value={this.props.id}>{this.props.name}</option>
+    );
+  }
+});
+
 var Body = React.createClass({
   mixins: [RoutingContextMixin],
   statics: {
@@ -107,14 +115,36 @@ var Body = React.createClass({
       console.log(salary);
     }    
   },
-  prompt: function() {
+  addCategory: function() {
     vex.dialog.prompt({
-      message: 'Nhóm hàng',
-      placeholder: 'Planet name',
+      message: 'Loại sản phẩm',
+      placeholder: 'Tên loại',
       callback: function(value) {
         vex.dialog.alert('Callback value: <b>'+value+'</b>');
 
         //TODO: gọi API tạo category
+      }
+    });
+  },
+  addProduct: function() {
+    vex.dialog.open({
+      message: 'Nhập thông tin sản phẩm:',
+      input: '' +
+          '<input name="name" type="text" placeholder="Tên" required />' +
+          '<input name="pos" type="text" placeholder="Vị trí" required />' +
+          '<input name="office" type="text" placeholder="Văn phòng" required />' +
+          '<input name="age" type="text" placeholder="Tuổi" required />' +
+          '<input name="start" type="date" placeholder="Ngày bắt đầu" required />' +
+          '<input name="salary" type="text" placeholder="Lương" required />' +
+      '',
+      buttons: [
+          $.extend({}, vex.dialog.buttons.YES, { text: 'Đồng ý' }),
+          $.extend({}, vex.dialog.buttons.NO, { text: 'Hủy bỏ' })
+      ],
+      callback: function (data) {
+        vex.dialog.alert('Tên: ' + data.name + ' Ngày: ' + data.start);
+
+        //TODO: Gọi API tạo sản phẩm
       }
     });
   },
@@ -153,11 +183,16 @@ var Body = React.createClass({
     this.props.employees.forEach(function(item) { 
       rows.push(<EmployeeRow toggle={toggle} refresh={refresh} id={item.id} name={item.name} pos={item.pos} office={item.office} age={item.age} start={item.start} salary={item.salary} key={item.id}/>);
     });
+
+    var categories = [];
+    this.props.categories.forEach(function(item) {
+      categories.push(<CategoryRow id={item.id} name={item.name} />);
+    });
     return (
       <Container id='body'>
         <Grid>
           <Row>
-            <Col sm={3}>
+            <Col sm={6}>
               <PanelContainer noOverflow controlStyles='bg-green fg-white'>
                 <Panel>
                   <PanelHeader className='bg-green fg-white'>
@@ -165,7 +200,7 @@ var Body = React.createClass({
                       <Row>
                         <Col xs={12}>
                           <h3>
-                            Nhóm hàng                             
+                            Sản phẩm
                           </h3>
                         </Col>
                       </Row>
@@ -174,53 +209,27 @@ var Body = React.createClass({
                   <PanelBody>
                     <Grid>
                       <Row>
-                        <Col xs={12}>
+                        <Col xs={6}>
                           <Form>
                             <FormGroup>
-                              <Button outlined onClick={this.prompt}>
+                              <h4>Loại sản phẩm</h4>
+                              <Button bsStyle='green' outlined onClick={this.addCategory}>
                                 Thêm
                               </Button>
                               <Select id='dropdownselect' defaultValue='1'>
-                                <option value='1'>Option 1</option>
-                                <option value='2'>Option 2</option>
-                                <option value='3'>Option 3</option>
-                                <option value='4'>Option 4</option>
-                                <option value='5'>Option 5</option>
+                                {categories}
                               </Select>
                             </FormGroup>
                           </Form>
                         </Col>
-                      </Row>
-                    </Grid>
-                  </PanelBody>
-                </Panel>
-              </PanelContainer>
-            </Col>
 
-            <Col sm={3}>
-              <PanelContainer noOverflow controlStyles='bg-green fg-white'>
-                <Panel>
-                  <PanelHeader className='bg-green fg-white'>
-                    <Grid>
-                      <Row>
-                        <Col xs={12}>
-                          <h3>Loại hàng hóa</h3>
-                        </Col>
-                      </Row>
-                    </Grid>
-                  </PanelHeader>
-                  <PanelBody>
-                    <Grid>
-                      <Row>
-                        <Col xs={12}>
+                        <Col xs={6}>
                           <Form>                            
                             <FormGroup>
-                              <Checkbox value='option1' name='checkbox-options'>
-                                Hàng nhập về
-                              </Checkbox>
-                              <Checkbox value='option2' defaultChecked name='checkbox-options'>
-                                Hàng dịch vụ
-                              </Checkbox>
+                              <h4>Thêm mới</h4>
+                              <Button bsStyle='green' outlined onClick={this.addProduct}>
+                                Thêm
+                              </Button>
                             </FormGroup>
                           </Form>
                         </Col>
@@ -231,14 +240,14 @@ var Body = React.createClass({
               </PanelContainer>
             </Col>
 
-            <Col sm={3}>
+            <Col sm={6}>
               <PanelContainer noOverflow controlStyles='bg-green fg-white'>
                 <Panel>
                   <PanelHeader className='bg-green fg-white'>
                     <Grid>
                       <Row>
                         <Col xs={12}>
-                          <h3>Lọc tồn kho</h3>
+                          <h3>Bộ lọc</h3>
                         </Col>
                       </Row>
                     </Grid>
@@ -246,9 +255,10 @@ var Body = React.createClass({
                   <PanelBody>
                     <Grid>
                       <Row>
-                        <Col xs={12}>
+                        <Col xs={6}>
                           <Form>
                             <FormGroup>
+                              <h4>Bộ lọc 1</h4>
                               <Radio value='option1' defaultChecked name='radio-options'>
                                 Option 1
                               </Radio>
@@ -261,31 +271,11 @@ var Body = React.createClass({
                             </FormGroup>
                           </Form>
                         </Col>
-                      </Row>
-                    </Grid>
-                  </PanelBody>
-                </Panel>
-              </PanelContainer>
-            </Col>
 
-            <Col sm={3}>
-              <PanelContainer noOverflow controlStyles='bg-green fg-white'>
-                <Panel>
-                  <PanelHeader className='bg-green fg-white'>
-                    <Grid>
-                      <Row>
-                        <Col xs={12}>
-                          <h3>Lựa chọn hiển thị</h3>
-                        </Col>
-                      </Row>
-                    </Grid>
-                  </PanelHeader>
-                  <PanelBody>
-                    <Grid>
-                      <Row>
-                        <Col xs={12}>
+                        <Col xs={6}>
                           <Form>
                             <FormGroup>
+                              <h4>Bộ lọc 2</h4>
                               <Radio value='option1' defaultChecked name='radio-options'>
                                 Option 1
                               </Radio>
@@ -366,13 +356,20 @@ var Page = React.createClass({
       <Container id='container' className={classes}>
         <Sidebar />
         <Header />
-        <Body employees={EMPLOYEES}>
+        <Body categories={CATEGORIES} employees={EMPLOYEES}>
           <Footer />
         </Body>
       </Container>
     );
   }
 });
+
+var CATEGORIES = [
+  {id: '1', name: 'Cafe'},
+  {id: '2', name: 'Sinh tố'},
+  {id: '3', name: 'Nước giải khát'},
+  {id: '4', name: 'Thuốc độc'}
+];
 
 var EMPLOYEES = [
   {id: '1', name: 'Airi Satou', pos: 'Accountant', office: 'Tokyo', age: '33', start: '2008/11/28', salary: '$162,700'},
